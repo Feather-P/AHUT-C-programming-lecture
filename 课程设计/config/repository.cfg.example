@@ -1,0 +1,7 @@
+repository: {
+  room_file_path = "data/rooms.json";
+  room_type_file_path = "data/room_types.json";
+  guest_file_path = "data/guests.json";
+  order_file_path = "data/orders.json";
+  price_file_path = "data/prices.json";
+};

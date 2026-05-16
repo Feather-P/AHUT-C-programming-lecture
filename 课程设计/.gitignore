@@ -1,0 +1,31 @@
+# Build dir
+build
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+compile_commands.json
+CTestTestfile.cmake
+Testing/
+Makefile
+cmake_install.cmake
+
+# IDEs
+.vscode
+.idea/
+*.swp
+*.swo
+
+# cache
+.cache
+
+# Logs / runtime
+*.log
+
+# macOS
+.DS_Store
+
+# vcpkg artifacts
+vcpkg_installed/
+
+# Local config (keep template)
+config/repository.cfg

@@ -1,0 +1,14 @@
+*
+!*/
+!*.*
+
+#
+*.7z
+*.zip
+
+#
+.vscode
+.VSCodeCounter
+
+# MacOS
+.DS_Store
