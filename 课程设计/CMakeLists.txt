@@ -18,6 +18,7 @@ add_executable(hotel-simple-manage-system
     src/repository/order_repository.c
     src/service/inventory_service.c
     src/service/guest_profile_service.c
+    src/service/price_service.c
     src/service/stay_lifecycle_service.c
     src/service/insight_service.c
     src/ui/tui_app.c

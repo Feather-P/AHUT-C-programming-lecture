@@ -6,6 +6,17 @@
 
 #include <string.h>
 
+static int next_order_id(OrderRegistry* orr) {
+    size_t i, n;
+    int max_id = 0;
+    n = order_registry_size(orr);
+    for (i = 0; i < n; ++i) {
+        Order* o = order_registry_get_at(orr, i);
+        if (o != NULL && order_get_id(o) > max_id) max_id = order_get_id(o);
+    }
+    return max_id + 1;
+}
+
 static ServiceCode to_tm(time_t t, struct tm* out_tm) {
     struct tm* p;
     if (out_tm == NULL || t <= (time_t)0) return SERVICE_ERR_INVALID_ARG;
@@ -66,8 +77,8 @@ ServiceCode stay_service_create_reservation(StayLifecycleService* svc, const Cre
     double amount, unit_price;
     Order* order;
     ServiceCode rc;
+    int order_id;
     if (svc == NULL || cmd == NULL || cmd->guest_id_card[0] == '\0') return SERVICE_ERR_INVALID_ARG;
-    if (order_registry_find_by_id(svc->order_registry, cmd->order_id) != NULL) return SERVICE_ERR_CONFLICT;
     room = room_registry_find_by_id(svc->inventory_service->room_registry, cmd->room_id);
     if (room == NULL) return SERVICE_ERR_NOT_FOUND;
     if (room_get_status(room) != ROOM_STATUS_IDLE) return SERVICE_ERR_CONFLICT;
@@ -76,7 +87,8 @@ ServiceCode stay_service_create_reservation(StayLifecycleService* svc, const Cre
     rc = stay_service_calculate_amount(svc, room_get_type_id(room), nights, &amount, &unit_price);
     if (rc != SERVICE_OK) return rc;
     if (to_tm(cmd->checkin_date, &ci) != SERVICE_OK || to_tm(cmd->checkout_date, &co) != SERVICE_OK) return SERVICE_ERR_INVALID_ARG;
-    order = order_create(cmd->order_id, cmd->guest_id_card, cmd->room_id, &ci, &co, amount);
+    order_id = next_order_id(svc->order_registry);
+    order = order_create(order_id, cmd->guest_id_card, cmd->room_id, &ci, &co, amount);
     if (order == NULL) return SERVICE_ERR_INTERNAL;
     if (!order_registry_register(svc->order_registry, order)) { order_destroy(order); return SERVICE_ERR_INTERNAL; }
     rc = inventory_service_mark_reserved(svc->inventory_service, cmd->room_id);
@@ -198,5 +210,59 @@ ServiceCode stay_service_check_out_and_settle(StayLifecycleService* svc,
         LOG_ERROR("stay_service_check_out_and_settle: persist failed path='%s'", config_get_order_file_path());
         return SERVICE_ERR_INTERNAL;
     }
+    return SERVICE_OK;
+}
+
+ServiceCode stay_service_list_order_views(StayLifecycleService* svc,
+                                          StayOrderView* out_views,
+                                          size_t max_views,
+                                          size_t* out_count) {
+    size_t i;
+    size_t n;
+    if (svc == NULL || svc->order_registry == NULL || out_views == NULL || out_count == NULL) {
+        return SERVICE_ERR_INVALID_ARG;
+    }
+    n = order_registry_size(svc->order_registry);
+    if (n > max_views) n = max_views;
+    for (i = 0; i < n; ++i) {
+        Order* o = order_registry_get_at(svc->order_registry, i);
+        if (o == NULL) continue;
+        out_views[i].order_id = order_get_id(o);
+        strncpy(out_views[i].guest_id_card, order_get_guest_prc_citizen_id(o), sizeof(out_views[i].guest_id_card) - 1);
+        out_views[i].guest_id_card[sizeof(out_views[i].guest_id_card) - 1] = '\0';
+        out_views[i].room_id = order_get_room_id(o);
+        out_views[i].status = order_get_status(o);
+        out_views[i].checkin_time = order_get_actual_checkin_time(o);
+        out_views[i].checkout_time = order_get_actual_checkout_time(o);
+    }
+    *out_count = n;
+    return SERVICE_OK;
+}
+
+ServiceCode stay_service_list_order_views_by_status(StayLifecycleService* svc,
+                                                    OrderStatus status,
+                                                    StayOrderView* out_views,
+                                                    size_t max_views,
+                                                    size_t* out_count) {
+    size_t i;
+    size_t count = 0;
+    size_t n;
+    if (svc == NULL || svc->order_registry == NULL || out_views == NULL || out_count == NULL) {
+        return SERVICE_ERR_INVALID_ARG;
+    }
+    n = order_registry_size(svc->order_registry);
+    for (i = 0; i < n && count < max_views; ++i) {
+        Order* o = order_registry_get_at(svc->order_registry, i);
+        if (o == NULL || order_get_status(o) != status) continue;
+        out_views[count].order_id = order_get_id(o);
+        strncpy(out_views[count].guest_id_card, order_get_guest_prc_citizen_id(o), sizeof(out_views[count].guest_id_card) - 1);
+        out_views[count].guest_id_card[sizeof(out_views[count].guest_id_card) - 1] = '\0';
+        out_views[count].room_id = order_get_room_id(o);
+        out_views[count].status = order_get_status(o);
+        out_views[count].checkin_time = order_get_actual_checkin_time(o);
+        out_views[count].checkout_time = order_get_actual_checkout_time(o);
+        ++count;
+    }
+    *out_count = count;
     return SERVICE_OK;
 }

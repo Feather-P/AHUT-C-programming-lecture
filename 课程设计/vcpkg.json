@@ -1,7 +1,6 @@
 {
   "dependencies": [
     "cjson",
-    "libconfig",
-    "ncurses"
+    "libconfig"
   ]
 }

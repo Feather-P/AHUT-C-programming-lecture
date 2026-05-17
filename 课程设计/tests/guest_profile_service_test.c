@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 
 const char* config_get_guest_file_path(void) { return "./guest_test.json"; }
 int guest_repository_save_all_to_file(const GuestRegistry* registry, const char* file_path) {
@@ -13,13 +14,22 @@ int guest_repository_save_all_to_file(const GuestRegistry* registry, const char*
 int main(void) {
     GuestRegistry* gr = guest_registry_create();
     GuestProfileService svc;
-    Guest* g;
+    CreateGuestCmd c1;
+    CreateGuestCmd c2;
     assert(gr != NULL);
     assert(guest_profile_service_init(&svc, gr) == SERVICE_OK);
-    g = guest_create(1, "id1", "n", "1", SEX_UNKNOWN, 0);
-    assert(g != NULL);
-    assert(guest_profile_service_add_guest(&svc, g) == SERVICE_OK);
-    assert(guest_profile_service_add_guest(&svc, guest_create(1, "id2", "m", "2", SEX_UNKNOWN, 0)) == SERVICE_ERR_CONFLICT);
+    memset(&c1, 0, sizeof(c1));
+    snprintf(c1.id_card, sizeof(c1.id_card), "%s", "id1");
+    snprintf(c1.name, sizeof(c1.name), "%s", "n");
+    snprintf(c1.tel, sizeof(c1.tel), "%s", "1");
+    c1.sex = SEX_UNKNOWN;
+    assert(guest_profile_service_create_guest(&svc, &c1) == SERVICE_OK);
+    memset(&c2, 0, sizeof(c2));
+    snprintf(c2.id_card, sizeof(c2.id_card), "%s", "id1");
+    snprintf(c2.name, sizeof(c2.name), "%s", "m");
+    snprintf(c2.tel, sizeof(c2.tel), "%s", "2");
+    c2.sex = SEX_UNKNOWN;
+    assert(guest_profile_service_create_guest(&svc, &c2) == SERVICE_ERR_CONFLICT);
     assert(guest_profile_service_increment_stay_count(&svc, "id1") == SERVICE_OK);
     guest_registry_destroy(gr);
     puts("guest profile service tests passed");

@@ -8,6 +8,7 @@
 const char* config_get_order_file_path(void) { return "./order_test.json"; }
 const char* config_get_room_file_path(void) { return "./room_test.json"; }
 const char* config_get_guest_file_path(void) { return "./guest_test.json"; }
+const char* config_get_room_type_file_path(void) { return "./room_type_test.json"; }
 
 int main(void) {
     OrderRegistry* or = order_registry_create();

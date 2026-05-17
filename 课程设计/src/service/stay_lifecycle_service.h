@@ -15,7 +15,6 @@ typedef struct StayLifecycleService {
 } StayLifecycleService;
 
 typedef struct CreateReservationCmd {
-    int order_id;
     char guest_id_card[24];
     int room_id;
     time_t reserved_at;
@@ -28,6 +27,15 @@ typedef struct SettlementResult {
     double unit_price;
     double total_amount;
 } SettlementResult;
+
+typedef struct StayOrderView {
+    int order_id;
+    char guest_id_card[24];
+    int room_id;
+    OrderStatus status;
+    time_t checkin_time;
+    time_t checkout_time;
+} StayOrderView;
 
 ServiceCode stay_service_init(StayLifecycleService* svc,
                               OrderRegistry* order_registry,
@@ -59,5 +67,14 @@ ServiceCode stay_service_calculate_amount(StayLifecycleService* svc,
                                           int nights,
                                           double* out_amount,
                                           double* out_unit_price);
+ServiceCode stay_service_list_order_views(StayLifecycleService* svc,
+                                          StayOrderView* out_views,
+                                          size_t max_views,
+                                          size_t* out_count);
+ServiceCode stay_service_list_order_views_by_status(StayLifecycleService* svc,
+                                                    OrderStatus status,
+                                                    StayOrderView* out_views,
+                                                    size_t max_views,
+                                                    size_t* out_count);
 
 #endif
