@@ -3,8 +3,6 @@ project(hotel-simple-manage-system VERSION 0.1.0 LANGUAGES C)
 
 find_package(cjson CONFIG REQUIRED)
 find_package(libconfig CONFIG REQUIRED)
-set(CURSES_NEED_NCURSES TRUE)
-find_package(Curses REQUIRED)
 
 add_executable(hotel-simple-manage-system
     src/config/config.c
@@ -35,13 +33,11 @@ target_include_directories(hotel-simple-manage-system
         src/utils
         src/models
         src/repository
-        ${CURSES_INCLUDE_DIRS}
 )
 
 target_link_libraries(hotel-simple-manage-system
     PRIVATE cjson
     PRIVATE libconfig::config
-    PRIVATE ${CURSES_LIBRARIES}
 )
 
 target_compile_features(hotel-simple-manage-system PRIVATE c_std_99)

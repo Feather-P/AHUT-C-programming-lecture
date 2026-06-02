@@ -16,7 +16,6 @@
 - 第三方库：
   - cJSON（JSON 解析/序列化）
   - libconfig（配置文件加载）
-  - Curses（终端 UI）
 
 可在 [`CMakeLists.txt`](CMakeLists.txt) 中看到依赖声明与可执行目标定义。
 
@@ -103,5 +102,5 @@ ctest --test-dir build --output-on-failure
 ## 8. 备注
 
 - 默认编码建议使用 UTF-8。
-- 终端界面依赖 curses，建议在支持 ANSI/终端控制的环境运行。
+- 终端界面当前基于标准输入输出实现，建议在支持 UTF-8 与常规控制台输出的终端环境运行。
 - 示例数据仅用于演示与测试。
